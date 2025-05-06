@@ -45,18 +45,18 @@ func scanRowsIntoArray (measurements *[]types.Measurement, res *sql.Rows) error 
 }
 
 func ReadAllMeasurementsFromDB () ([]types.Measurement, error) {
-	db, openErr := sql.Open("sqlite3", dbPath)		
+	db, err := sql.Open("sqlite3", dbPath)		
 	defer db.Close()
 	
-	if(openErr != nil){
-		log.Fatal(openErr)
+	if(err != nil){
+		log.Fatal(err)
 		return nil, fmt.Errorf("Failed to open database.")
 	}
 	
-	res, queryErr := db.Query("SELECT * FROM READINGS;")
+	res, err := db.Query("SELECT * FROM READINGS;")
 
-	if(queryErr != nil){
-		return nil, queryErr
+	if(err != nil){
+		return nil, err
 	}
 
 	measurements := make([]types.Measurement, 0, 500)
