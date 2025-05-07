@@ -41,7 +41,7 @@ func ReadAllMeasurementsFromDB () ([]types.Measurement, error) {
 		return nil, fmt.Errorf("Failed to open database.")
 	}
 	
-	res, err := db.Query("SELECT * FROM READINGS;")
+	res, err := db.Query("SELECT * FROM MEASUREMENTS;")
 
 	if(err != nil){
 		return nil, err
@@ -64,7 +64,7 @@ func ReadBetweenMeasurementsFromDB (start int, stop int) ([]types.Measurement, e
 	
 	measurements := make([]types.Measurement, 0, 500)
 
-	res, err := db.Query("SELECT * FROM READINGS WHERE timestamp > ? AND timestamp < ?;", start, stop)
+	res, err := db.Query("SELECT * FROM MEASUREMENTS WHERE timestamp > ? AND timestamp < ?;", start, stop)
 
 	if err != nil {
 		return nil, err
@@ -85,7 +85,7 @@ func ReadSinceMeasurementsFromDB (timestamp int) ([]types.Measurement, error) {
 
 	measurements := make([]types.Measurement, 0, 500)
 
-	res, err := db.Query("SELECT * FROM READINGS WHERE timestamp > ?;", timestamp)
+	res, err := db.Query("SELECT * FROM MEASUREMENTS WHERE timestamp > ?;", timestamp)
 
 	if err != nil {
 		return nil, err

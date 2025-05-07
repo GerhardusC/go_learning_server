@@ -25,12 +25,16 @@ func messageHandler (client mqtt.Client, message mqtt.Message) {
 
 	_, err := strconv.ParseFloat(msg, 64)
 
+	var tableName string
+
 	if err != nil {
 		log.Println("Failed to parse message to float, saving as log")
-		dbInteractions.WriteLogEntryToDB(measurement)
+		tableName = "LOGS"
 	} else {
-		dbInteractions.WriteMeasurementToDB(measurement)
+		tableName = "MEASUREMENTS"
 	}
+
+	measurement.WriteToTable(tableName)
 }
 
 func CollectData () {

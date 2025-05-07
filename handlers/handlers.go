@@ -15,6 +15,10 @@ func InitHandlers () {
 	http.HandleFunc("GET /measurements", allMeasurementsHandler)
 	http.HandleFunc("GET /measurements_since", sinceMeasurementsHandler)
 	http.HandleFunc("GET /measurements_between", betweenMeasurementsHandler)
+
+
+	fs := http.FileServer(http.Dir("dist/"))
+	http.Handle("GET /", fs)
 }
 
 func allMeasurementsHandler (writer http.ResponseWriter, _ *http.Request) {
