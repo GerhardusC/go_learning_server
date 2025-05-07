@@ -3,30 +3,18 @@ package dbInteractions
 import (
 	"database/sql"
 	"testing-server/types" 
-	"flag"
+	"testing-server/cliArgs" 
 	"fmt"
 	"log"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type DBRowMeasurement struct {
-	timestamp int
-	topic string
-	value float64
-}
 
-var dbPath string
-
-func InitDBPathFromArgs() {
-	flag.StringVar(&dbPath, "d", "./data.db", "Database path")
-	flag.Parse()
-	log.Println("DB Path: ", dbPath)
-}
 
 func scanRowsIntoArray (measurements *[]types.Measurement, res *sql.Rows) error {
 	for res.Next() {
 		var measurement DBRowMeasurement
-		scanErr := res.Scan(&measurement.timestamp, &measurement.topic, &measurement.value)
+		scanErr := res.Scan(&measurement.Timestamp, &measurement.Topic, &measurement.Value)
 
 		if scanErr != nil {
 			return scanErr
@@ -35,9 +23,9 @@ func scanRowsIntoArray (measurements *[]types.Measurement, res *sql.Rows) error 
 		*measurements = append(
 			*measurements, 
 			types.Measurement{
-				Timestamp: measurement.timestamp,
-				Topic: measurement.topic,
-				Value: measurement.value,
+				Timestamp: measurement.Timestamp,
+				Topic: measurement.Topic,
+				Value: measurement.Value,
 			},
 		)
 	}
@@ -45,11 +33,11 @@ func scanRowsIntoArray (measurements *[]types.Measurement, res *sql.Rows) error 
 }
 
 func ReadAllMeasurementsFromDB () ([]types.Measurement, error) {
-	db, err := sql.Open("sqlite3", dbPath)		
+	db, err := sql.Open("sqlite3", cliargs.DbPath)		
 	defer db.Close()
 	
 	if(err != nil){
-		log.Fatal(err)
+		log.Println(err)
 		return nil, fmt.Errorf("Failed to open database.")
 	}
 	
@@ -67,7 +55,7 @@ func ReadAllMeasurementsFromDB () ([]types.Measurement, error) {
 }
 
 func ReadBetweenMeasurementsFromDB (start int, stop int) ([]types.Measurement, error) {
-	db, err := sql.Open("sqlite3", dbPath)
+	db, err := sql.Open("sqlite3", cliargs.DbPath)
 	defer db.Close()
 
 	if err != nil {
@@ -88,7 +76,7 @@ func ReadBetweenMeasurementsFromDB (start int, stop int) ([]types.Measurement, e
 }
 
 func ReadSinceMeasurementsFromDB (timestamp int) ([]types.Measurement, error) {
-	db, err := sql.Open("sqlite3", dbPath)
+	db, err := sql.Open("sqlite3", cliargs.DbPath)
 	defer db.Close()
 	
 	if err != nil {

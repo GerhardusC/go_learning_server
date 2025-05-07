@@ -4,15 +4,20 @@ import (
 	"log"
 	"net/http"
 	"testing-server/handlers"
+	"testing-server/dataCollection"
+	"testing-server/cliArgs"
 	"testing-server/dbInteractions"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 
 func main () {
-	dbInteractions.InitDBPathFromArgs()
-	handlers.InitHandlers()
+	cliargs.InitArgs()
+	dbInteractions.InitDB()
 
+	go datacollection.CollectData()
+
+	handlers.InitHandlers()
 	log.Println("Serving on port 80")
 	err := http.ListenAndServe(":80", nil)
 	log.Println("Failed to serve on port 80")
