@@ -9,5 +9,5 @@ type Person struct {
 type Measurement struct {
 	Timestamp int		`json:"timestamp"`
 	Topic string            `json:"topic"`
-	Value string           `json:"value"`
+	Value float64           `json:"value"`
 }

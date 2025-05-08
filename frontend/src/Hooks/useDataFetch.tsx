@@ -19,8 +19,8 @@ const handleDataFetch = async (params: HandleDataFetchParams) => {
         }
     })
     const endpoint = startStop ?  
-        `/measurements_between?start=${startStop[0]}&stop=${startStop[1]}`:
-        `/measurements_since?timestamp=${timestamp ?? getNowEpoch() - 3600}`;
+        `/measurements/between?start=${startStop[0]}&stop=${startStop[1]}`:
+        `/measurements/since?timestamp=${timestamp ?? getNowEpoch() - 3600}`;
     try {
         const res = await fetch(endpoint);
         if(res.ok){

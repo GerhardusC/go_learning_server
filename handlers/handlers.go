@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 	"testing-server/cliArgs"
@@ -12,14 +13,28 @@ import (
 
 
 func InitHandlers () {
-	http.HandleFunc("GET /person", peopleHandler)
-	http.HandleFunc("GET /measurements", allMeasurementsHandler)
-	http.HandleFunc("GET /measurements_since", sinceMeasurementsHandler)
-	http.HandleFunc("GET /measurements_between", betweenMeasurementsHandler)
+	mux := http.NewServeMux()
 
+	mux.HandleFunc("GET /person", peopleHandler)
+	mux.HandleFunc("GET /measurements", allMeasurementsHandler)
+	mux.HandleFunc("GET /measurements/since", sinceMeasurementsHandler)
+	mux.HandleFunc("GET /measurements/between", betweenMeasurementsHandler)
 
-fs := http.FileServer(http.Dir(cliargs.ServeDir))
-	http.Handle("GET /", fs)
+	fs := http.FileServer(http.Dir(cliargs.ServeDir))
+	mux.Handle("GET /", fs)
+
+	server := http.Server{
+		Handler: mux,
+	}
+	log.Println("Serving on port 80")
+	err := server.ListenAndServe()
+	log.Println("Failed to serve on port 80")
+
+	if err != nil {
+		server.Addr = ":8080"
+		log.Println("Falling back to 8080")
+		server.ListenAndServe()
+	}
 }
 
 func allMeasurementsHandler (writer http.ResponseWriter, _ *http.Request) {

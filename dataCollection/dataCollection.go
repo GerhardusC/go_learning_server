@@ -17,7 +17,7 @@ func messageHandler (client mqtt.Client, message mqtt.Message) {
 
 	msg := string(message.Payload())
 
-	measurement := dbInteractions.DBRowMeasurement{
+	measurement := dbInteractions.DBRowMeasurement[string]{
 		Timestamp: int(now),
 		Topic: message.Topic(),
 		Value: msg,

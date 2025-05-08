@@ -9,7 +9,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func (measurement DBRowMeasurement) WriteToTable (tableName string) error {
+func (measurement DBRowMeasurement[any]) WriteToTable (tableName string) error {
 	db, err := sql.Open("sqlite3", cliargs.DbPath)		
 	defer db.Close()
 
@@ -32,4 +32,3 @@ func (measurement DBRowMeasurement) WriteToTable (tableName string) error {
 	}
 	return nil
 }
-

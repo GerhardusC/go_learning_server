@@ -10,10 +10,10 @@ import (
 )
 
 
-type DBRowMeasurement struct {
+type DBRowMeasurement[T string | float64] struct {
 	Timestamp int
 	Topic string
-	Value string
+	Value T
 }
 
 func InitDB () error {

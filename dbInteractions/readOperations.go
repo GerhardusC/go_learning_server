@@ -2,18 +2,19 @@ package dbInteractions
 
 import (
 	"database/sql"
-	"testing-server/types" 
-	"testing-server/cliArgs" 
 	"fmt"
 	"log"
+	"testing-server/cliArgs"
+	"testing-server/types"
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
 
 
-func scanRowsIntoArray (measurements *[]types.Measurement, res *sql.Rows) error {
+func scanMeasurementsIntoArray (measurements *[]types.Measurement, res *sql.Rows) error {
 	for res.Next() {
-		var measurement DBRowMeasurement
+		var measurement DBRowMeasurement[float64]
 		scanErr := res.Scan(&measurement.Timestamp, &measurement.Topic, &measurement.Value)
 
 		if scanErr != nil {
@@ -49,7 +50,7 @@ func ReadAllMeasurementsFromDB () ([]types.Measurement, error) {
 
 	measurements := make([]types.Measurement, 0, 500)
 
-	scanRowsIntoArray(&measurements, res)	
+	scanMeasurementsIntoArray(&measurements, res)	
 
 	return measurements, nil
 }
@@ -70,7 +71,7 @@ func ReadBetweenMeasurementsFromDB (start int, stop int) ([]types.Measurement, e
 		return nil, err
 	}
 
-	scanRowsIntoArray(&measurements, res)
+	scanMeasurementsIntoArray(&measurements, res)
 
 	return measurements, nil
 }
@@ -91,7 +92,7 @@ func ReadSinceMeasurementsFromDB (timestamp int) ([]types.Measurement, error) {
 		return nil, err
 	}
 
-	scanRowsIntoArray(&measurements, res)
+	scanMeasurementsIntoArray(&measurements, res)
 
 	return measurements, nil
 }
