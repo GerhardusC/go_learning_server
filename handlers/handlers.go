@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"testing-server/cliArgs"
 	"testing-server/dbInteractions"
 	"testing-server/types"
 )
@@ -17,7 +18,7 @@ func InitHandlers () {
 	http.HandleFunc("GET /measurements_between", betweenMeasurementsHandler)
 
 
-	fs := http.FileServer(http.Dir("dist/"))
+fs := http.FileServer(http.Dir(cliargs.ServeDir))
 	http.Handle("GET /", fs)
 }
 
