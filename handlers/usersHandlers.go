@@ -39,7 +39,7 @@ func signupHandler (writer http.ResponseWriter, request *http.Request) {
 	}
 
 	token := jwt.NewWithClaims(
-		jwt.SigningMethodRS256,
+		jwt.SigningMethodHS256,
 		jwt.MapClaims{
 			"created_at": authorisedUser.CreatedAt,
 			"email": authorisedUser.Email,
@@ -48,11 +48,18 @@ func signupHandler (writer http.ResponseWriter, request *http.Request) {
 		},
 	)
 
-	tokenString, err := token.SignedString(sec)
+	tokenString, err := token.SignedString([]byte(sec))
+
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	log.Println("TokenString: ", tokenString)
 	
 	writer.Header().Set("Authorization", fmt.Sprint("Bearer ", tokenString))
 	writer.Header().Set("content-type", "text/plain")
-	writer.Write([]byte(""))
+	writer.Write([]byte("Signup successful."))
 }
 
 func login (writer http.ResponseWriter, request *http.Request) {
