@@ -13,7 +13,14 @@ type Logger struct {
 func (l *Logger) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	startReq := time.Now()
 	l.handler.ServeHTTP(writer, request)
-	log.Println("Request headers: ", request.Header, "\nEndpoint: ", request.URL, "\nRequest duration: ", time.Since(startReq))
+	log.Println(
+		"Request headers: ",
+		request.Header,
+		"\nEndpoint: ",
+		request.URL,
+		"\nRequest duration: ",
+		time.Since(startReq),
+	)
 }
 
 func NewLogger(handler http.Handler) *Logger {

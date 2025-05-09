@@ -2,7 +2,10 @@ module testing-server
 
 go 1.24.2
 
-require github.com/mattn/go-sqlite3 v1.14.28
+require (
+	github.com/golang-jwt/jwt/v5 v5.2.2
+	github.com/mattn/go-sqlite3 v1.14.28
+)
 
 require (
 	github.com/eclipse/paho.mqtt.golang v1.5.0 // direct

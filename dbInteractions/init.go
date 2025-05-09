@@ -40,10 +40,13 @@ func InitDB () error {
 	}
 
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS USERS (
-				id int PRIMARY KEY ASC,
+				id INTEGER PRIMARY KEY ASC AUTOINCREMENT NOT NULL,
 				created_at date NOT NULL,
-				username varchar(255) NOT NULL,
-				hashed_pwd varchar(255)
+				email TEXT NOT NULL,
+				username TEXT NOT NULL,
+				hashed_pwd TEXT,
+				permission_level int,
+				UNIQUE(email, username)
 			)
 		`)
 
