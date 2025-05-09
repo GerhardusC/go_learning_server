@@ -9,13 +9,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-
-type DBRowMeasurement[T string | float64] struct {
-	Timestamp int
-	Topic string
-	Value T
-}
-
 func InitDB () error {
 	db, err := sql.Open("sqlite3", cliargs.DbPath)
 	defer db.Close()
@@ -39,6 +32,18 @@ func InitDB () error {
 				timestamp int,
 				topic varchar(255),
 				value varchar(255)
+			)
+		`)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS USERS (
+				id int PRIMARY KEY ASC,
+				created_at date NOT NULL,
+				username varchar(255) NOT NULL,
+				hashed_pwd varchar(255)
 			)
 		`)
 

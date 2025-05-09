@@ -19,7 +19,6 @@ func InitHandlers () {
 
 	mux.HandleFunc("GET /person", middleware.CheckAuth(peopleHandler))
 
-
 	mux.HandleFunc("GET /measurements", allMeasurementsHandler)
 	mux.HandleFunc("GET /measurements/since", sinceMeasurementsHandler)
 	mux.HandleFunc("GET /measurements/between", betweenMeasurementsHandler)

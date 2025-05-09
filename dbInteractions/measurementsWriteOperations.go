@@ -18,11 +18,12 @@ func (measurement DBRowMeasurement[any]) WriteToTable (tableName string) error {
 		return fmt.Errorf("Failed to open database.")
 	}
 
+	readyStatement := fmt.Sprintf(`INSERT INTO %s 
+		VALUES (unixepoch(), ?, ?)
+		`, tableName)
+
 	_, err = db.Exec(
-		fmt.Sprintf(`INSERT INTO %s (timestamp, topic, value)
-		VALUES (?, ?, ?)
-		`, tableName),
-		measurement.Timestamp,
+		readyStatement,
 		measurement.Topic,
 		measurement.Value,
 	)

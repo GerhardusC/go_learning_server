@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"time"
 	"strconv"
 	"testing-server/cliArgs"
 	"testing-server/dbInteractions"
@@ -13,12 +12,11 @@ import (
 )
 
 func messageHandler (client mqtt.Client, message mqtt.Message) {
-	now := time.Now().UTC().Unix()
-
 	msg := string(message.Payload())
 
 	measurement := dbInteractions.DBRowMeasurement[string]{
-		Timestamp: int(now),
+		// Timestamp gets automatically assigned at insertion, saving operation making it 0 here.
+		Timestamp: 0,
 		Topic: message.Topic(),
 		Value: msg,
 	}

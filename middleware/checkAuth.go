@@ -17,7 +17,7 @@ const AuthUserKey userContextKey = "user context key"
 func CheckAuth(handler http.HandlerFunc) http.HandlerFunc {
 	return func (writer http.ResponseWriter, request *http.Request) {
 		if strings.Contains(request.Header.Get("User-Agent"), "Mozilla") {
-			writer.Write([]byte("Unauthorized"))
+			http.Error(writer, "Firefox users not allowed.", http.StatusUnauthorized)
 			return
 		}
 
