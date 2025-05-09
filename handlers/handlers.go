@@ -3,19 +3,23 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"testing-server/cliArgs"
 	"testing-server/dbInteractions"
 	"testing-server/types"
+	"testing-server/middleware"
 )
 
 
 func InitHandlers () {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /person", peopleHandler)
+	mux.HandleFunc("GET /person", middleware.CheckAuth(peopleHandler))
+
+
 	mux.HandleFunc("GET /measurements", allMeasurementsHandler)
 	mux.HandleFunc("GET /measurements/since", sinceMeasurementsHandler)
 	mux.HandleFunc("GET /measurements/between", betweenMeasurementsHandler)
@@ -23,8 +27,11 @@ func InitHandlers () {
 	fs := http.FileServer(http.Dir(cliargs.ServeDir))
 	mux.Handle("GET /", fs)
 
+
+	muxMiddlewareApplied := middleware.NewLogger(mux)
+
 	server := http.Server{
-		Handler: mux,
+		Handler: muxMiddlewareApplied,
 	}
 	log.Println("Serving on port 80")
 	err := server.ListenAndServe()
@@ -102,7 +109,7 @@ func sinceMeasurementsHandler (writer http.ResponseWriter, request *http.Request
 	json.NewEncoder(writer).Encode(measurements)
 }
 
-func peopleHandler (writer http.ResponseWriter, _ *http.Request) {
+func peopleHandler (writer http.ResponseWriter, request *http.Request) {
 	names := []string{
 		"Adam",
 		"Sally",
@@ -134,7 +141,10 @@ func peopleHandler (writer http.ResponseWriter, _ *http.Request) {
 		Siblings: names,
 	}
 
+	user := request.Context().Value(middleware.AuthUserKey).(middleware.User)
 	writer.Header().Set("Content-Type", "application/json")
+
+	writer.Header().Add("User-Details", fmt.Sprint(user.Username))
 	// Write output.
 	json.NewEncoder(writer).Encode(person)
 }
