@@ -21,9 +21,9 @@ func (user UserPreAuth) GetFromDB() (User, error) {
 
 	query := `
 		SELECT id, created_at, email, username, permission_level, hashed_pwd FROM USERS
-		WHERE email = ? AND username = ?;
+		WHERE username = ?;
 	`
-	row := db.QueryRow(query, user.Email, user.Username)
+	row := db.QueryRow(query, user.Username)
 
 	var hashedPwd string
 	var retrievedUser User

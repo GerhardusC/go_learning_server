@@ -23,6 +23,7 @@ func InitHandlers () {
 
 	// User management
 	mux.HandleFunc("POST /signup", signupHandler)
+	mux.HandleFunc("POST /login", loginHandler)
 
 	fs := http.FileServer(http.Dir(cliargs.ServeDir))
 	mux.Handle("GET /", fs)
