@@ -8,7 +8,6 @@ import (
 	"os"
 	"strings"
 	"testing-server/dbInteractions"
-	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -16,6 +15,11 @@ import (
 type userContextKey string
 
 const AuthUserKey userContextKey = "user context key"
+
+type userJwtClaims struct {
+	UserDetails dbInteractions.User `json:"user_details"`
+	jwt.RegisteredClaims
+}
 
 func CheckAuth(handler http.HandlerFunc) http.HandlerFunc {
 	return func (writer http.ResponseWriter, request *http.Request) {
@@ -35,29 +39,26 @@ func CheckAuth(handler http.HandlerFunc) http.HandlerFunc {
 			sec = "test-secret"
 		}
 
-		token, err := jwt.Parse(tokenString, func(t *jwt.Token) (any, error) {
+		token, err := jwt.ParseWithClaims(tokenString, &userJwtClaims{}, func(t *jwt.Token) (any, error) {
 			return []byte(sec), nil
 		}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
 
 		if err != nil {
+			log.Println("Error in check auth: ", err)
 			http.Error(writer, errors.New("Token invalid").Error(), http.StatusUnauthorized)
 			return
 		}
 
-		claims, ok := token.Claims.(jwt.MapClaims)
+		claims, ok := token.Claims.(*userJwtClaims)
 
 		if !ok {
 			http.Error(writer, errors.New("Token invalid").Error(), http.StatusUnauthorized)
 			return
 		}
 
-		decodedUser := claims["user_details"].(dbInteractions.User)
-		exp := claims["exp"].(time.Time)
+		log.Println("User: ", claims.UserDetails)
 
-		log.Println("expiery: ", exp)
-		log.Println("New user: ", exp)
-
-		ctx := context.WithValue(request.Context(), AuthUserKey, decodedUser)
+		ctx := context.WithValue(request.Context(), AuthUserKey, claims.UserDetails)
 
 		reqWithUser := request.WithContext(ctx)
 
