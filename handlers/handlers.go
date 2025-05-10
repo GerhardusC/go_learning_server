@@ -6,8 +6,9 @@ import (
 	"log"
 	"net/http"
 	"testing-server/cliArgs"
-	"testing-server/types"
+	"testing-server/dbInteractions"
 	"testing-server/middleware"
+	"testing-server/types"
 )
 
 
@@ -78,7 +79,7 @@ func peopleHandler (writer http.ResponseWriter, request *http.Request) {
 		Siblings: names,
 	}
 
-	user := request.Context().Value(middleware.AuthUserKey).(middleware.User)
+	user := request.Context().Value(middleware.AuthUserKey).(dbInteractions.User)
 	writer.Header().Set("Content-Type", "application/json")
 
 	writer.Header().Add("User-Details", fmt.Sprint(user.Username))

@@ -9,13 +9,13 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func (user UserPreAuth) SaveToDb(permissionLevel int) (User, error) {
+func (user UserPreAuth) SaveToDb(permissionLevel int) error {
 	db, err := sql.Open("sqlite3", cliargs.DbPath)
 	defer db.Close()
 
 	if err != nil {
 		log.Println("Unable to open database to create user")
-		return User{}, err
+		return err
 	}
 	
 	//TODO! Ensure user is not spammer, do some sort of 2 step email or something.
@@ -30,17 +30,9 @@ func (user UserPreAuth) SaveToDb(permissionLevel int) (User, error) {
 	_, err = db.Exec(query, user.Email, user.Username, hashedPwd, permissionLevel)
 
 	if err != nil {
-		return User{}, err
+		return err
 	}
-
-	createdUser, err := user.GetFromDB()
-
-	if err != nil {
-		log.Println(err)
-		return User{}, err
-	}
-
-	return createdUser, nil
+	return nil
 }
 
 
