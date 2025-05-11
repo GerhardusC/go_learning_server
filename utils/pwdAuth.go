@@ -1,4 +1,4 @@
-package pwdauth
+package utils
 
 import (
 	"crypto/sha256"

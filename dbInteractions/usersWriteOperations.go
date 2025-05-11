@@ -20,7 +20,7 @@ func (user UserPreAuth) SaveToDb(permissionLevel int) error {
 	
 	//TODO! Ensure user is not spammer, do some sort of 2 step email or something.
 	
-	hashedPwd := pwdauth.SaltAndHashPwd(user.Username, user.UnhashedPwd)
+	hashedPwd := utils.SaltAndHashPwd(user.Username, user.UnhashedPwd)
 
 	query := `
 		INSERT INTO USERS	(created_at, email,	username,	hashed_pwd,	permission_level)

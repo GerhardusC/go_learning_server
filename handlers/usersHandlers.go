@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"testing-server/dbInteractions"
+	"testing-server/utils"
 )
 
 func signupHandler (writer http.ResponseWriter, request *http.Request) {
@@ -18,6 +19,20 @@ func signupHandler (writer http.ResponseWriter, request *http.Request) {
 
 	if err != nil {
 		http.Error(writer, errors.New("Failed to decode JSON").Error(), http.StatusBadRequest)
+		return
+	}
+
+	emailValid := utils.ValidateEmail(preAuthUser.Email)
+
+	if !emailValid {
+		http.Error(writer, errors.New("Invalid email address").Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = utils.ValidatePwd(preAuthUser.UnhashedPwd)
+
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
 	}
 

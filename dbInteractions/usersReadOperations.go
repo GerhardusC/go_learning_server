@@ -1,6 +1,7 @@
 package dbInteractions
 
 import (
+	"crypto/subtle"
 	"database/sql"
 	"errors"
 	"log"
@@ -47,11 +48,11 @@ func (user UserPreAuth) GetFromDB() (User, error) {
 		return User{}, errors.New("Password authentication not enabled.")
 	}
 
-	receivedHash := pwdauth.SaltAndHashPwd(user.Username, user.UnhashedPwd)
+	receivedHash := utils.SaltAndHashPwd(user.Username, user.UnhashedPwd)
 
 	log.Println("StoredHash: ", hashedPwd, "\nReceivedHash: ", receivedHash)
 
-	if  receivedHash == hashedPwd {
+	if  subtle.ConstantTimeCompare([]byte(receivedHash), []byte(hashedPwd)) == 1 {
 		return retrievedUser, nil
 	}
 
