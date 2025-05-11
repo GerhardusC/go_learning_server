@@ -2,3 +2,4 @@ backup/
 data.db
 testing-server
 script.sh
+.secret
