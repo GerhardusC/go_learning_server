@@ -11,6 +11,40 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+/** 
+** A shortcut function to get user. Only use if the user is already authenticated.*/
+func GetUserByUsername (username string) (User, error) {
+	db, err := sql.Open("sqlite3", cliargs.DbPath)
+	defer db.Close()
+
+	if err != nil {
+		log.Println("Unable to open database to retrieve user")
+		return User{}, err
+	}
+
+	query := `
+		SELECT id, created_at, email, username, permission_level FROM USERS
+		WHERE username = ?;
+	`
+	row := db.QueryRow(query, username)
+
+	var retrievedUser User
+
+	err = row.Scan(
+		&retrievedUser.ID,
+		&retrievedUser.CreatedAt,
+		&retrievedUser.Email,
+		&retrievedUser.Username,
+		&retrievedUser.PermissionLevel,
+	)
+
+	if err != nil {
+		return User{}, err
+	}
+
+	return retrievedUser, nil
+}
+
 func (user UserPreAuth) GetFromDB() (User, error) {
 	db, err := sql.Open("sqlite3", cliargs.DbPath)
 	defer db.Close()

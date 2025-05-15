@@ -26,6 +26,9 @@ func InitHandlers () {
 	mux.HandleFunc("POST /signup", signupHandler)
 	mux.HandleFunc("POST /login", loginHandler)
 
+	// TODO: Verify that username and email are not in use before sending OTP.
+	mux.HandleFunc("POST /signup/verify_otp", verifyOTPSignupHandler)
+
 	fs := http.FileServer(http.Dir(cliargs.ServeDir))
 	mux.Handle("GET /", fs)
 

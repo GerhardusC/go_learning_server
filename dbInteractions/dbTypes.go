@@ -15,7 +15,12 @@ type User struct {
 }
 
 type UserPreAuth struct {
-	Email		string	`json:"email"`
-	UnhashedPwd	string	`json:"password"`
+	Email		string	`json:"email,omitempty"`
+	UnhashedPwd	string	`json:"password,omitempty"`
 	Username	string	`json:"username"`
+}
+
+type OTPVerifyObj struct {
+	User	UserPreAuth	`json:"user"`
+	OTP	string		`json:"otp"`
 }

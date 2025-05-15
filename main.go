@@ -14,7 +14,7 @@ func main () {
 	cliargs.InitArgs()
 	dbInteractions.InitDB()
 
-	utils.SendExampleEmail()
+	go utils.SendExampleEmail()
 
 	go datacollection.CollectData()
 	handlers.InitHandlers()
