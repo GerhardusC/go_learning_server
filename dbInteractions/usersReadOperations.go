@@ -1,16 +1,55 @@
 package dbInteractions
 
 import (
-	"crypto/subtle"
 	"crypto/sha256"
+	"crypto/subtle"
 	"database/sql"
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"testing-server/cliArgs"
 
 	_ "github.com/mattn/go-sqlite3"
 )
+
+func (user *UserPreAuth) CheckUsernameAndEmailAvailability () error {
+	db, err := sql.Open("sqlite3", cliargs.DbPath)
+	defer db.Close()
+
+	if err != nil {
+		log.Println("Unable to open database to retrieve user")
+		return err
+	}
+
+	query := `
+		SELECT email, username FROM USERS
+		WHERE username = ? OR email = ?;
+	`
+	row := db.QueryRow(query, user.Username, user.Email)
+
+	var retrievedEmail string
+	var retrievedUsername string
+
+	err = row.Scan(&retrievedEmail, &retrievedUsername)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "no rows in result set") {
+			return nil
+		}
+		return err
+	}
+
+	if retrievedEmail != "" {
+		return errors.New("Email not available")
+	}
+
+	if retrievedUsername != "" {
+		return errors.New("Username not available")
+	}
+
+	return nil
+}
 
 /** 
 ** A shortcut function to get user. Only use if the user is already authenticated.*/
@@ -46,7 +85,7 @@ func GetUserByUsername (username string) (User, error) {
 	return retrievedUser, nil
 }
 
-func (user UserPreAuth) GetFromDB() (User, error) {
+func (user *UserPreAuth) GetFromDB() (User, error) {
 	db, err := sql.Open("sqlite3", cliargs.DbPath)
 	defer db.Close()
 

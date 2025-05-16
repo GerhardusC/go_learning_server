@@ -5,9 +5,25 @@ import (
 	"regexp"
 )
 
-func ValidateEmail (email string) bool {
+func ValidateEmailPwd (email string, pwd string) error {
+	err := ValidateEmail(email)
+	if err != nil {
+		return err
+	}
+
+	err = ValidatePwd(pwd)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func ValidateEmail (email string) error {
 	emailRegex := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
-	return emailRegex.MatchString(email)
+	if !emailRegex.MatchString(email) {
+		return errors.New("Email address malformed")
+	}
+	return nil
 }
 
 func ValidatePwd (pwd string) error {

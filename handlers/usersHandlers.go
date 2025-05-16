@@ -22,14 +22,15 @@ func signupHandler (writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	emailValid := utils.ValidateEmail(preAuthUser.Email)
 
-	if !emailValid {
-		http.Error(writer, errors.New("Invalid email address").Error(), http.StatusBadRequest)
+	err = utils.ValidateEmailPwd(preAuthUser.Email, preAuthUser.UnhashedPwd)
+
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = utils.ValidatePwd(preAuthUser.UnhashedPwd)
+	err = preAuthUser.CheckUsernameAndEmailAvailability()
 
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
