@@ -41,7 +41,7 @@ func SendOTP (otp string, toEmail string) error {
 	password := os.Getenv("EMAIL_PASSWORD")
 
 	if from == "" || password == "" {
-		errMsg := "Username and password environment variables must be set"
+		errMsg := "EMAIL_USERNAME and EMAIL_password environment variables must be set"
 		log.Println(errMsg)
 		return errors.New(errMsg)
 	}
