@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/smtp"
 	"os"
+	"time"
 )
 
 func SendExampleEmail () {
@@ -19,9 +20,11 @@ func SendExampleEmail () {
 
 	to := []string{os.Getenv("TEST_TO_EMAIL")}
 
-	msg := []byte("Subject: Hello from Home Server!\r\n" +
+	now := time.Now()
+
+	msg := []byte("Subject: Home Server has started!\r\n" +
 		"\r\n" +
-		"This is the email body.\r\n")
+		"Started at:\r\n" + now.String())
 
 	auth := smtp.PlainAuth("Home Server", from, password, "smtp.gmail.com")
 
@@ -31,7 +34,6 @@ func SendExampleEmail () {
 	}
 
 	fmt.Println("Email sent successfully!")
-
 }
 
 func SendOTP (otp string, toEmail string) error {
@@ -47,6 +49,7 @@ func SendOTP (otp string, toEmail string) error {
 	to := []string{toEmail}
 
 	msg := fmt.Appendf(nil, `Subject: Login OTP
+
 		OTP: %s
 	`, otp)
 
