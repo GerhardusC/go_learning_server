@@ -108,6 +108,7 @@ func GenerateToken (authorisedUser *User) (string, error) {
 		sec = "test-secret"
 	}
 
+	// TODO: Add expiery date for token.
 	token := jwt.NewWithClaims(
 		jwt.SigningMethodHS256,
 		jwt.MapClaims{

@@ -2,9 +2,10 @@ package dbInteractions
 
 import (
 	"database/sql"
+	"crypto/sha256"
+	"fmt"
 	"log"
 	"testing-server/cliArgs"
-	"testing-server/utils"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -18,9 +19,7 @@ func (user UserPreAuth) SaveToDb(permissionLevel int) error {
 		return err
 	}
 	
-	//TODO! Ensure user is not spammer, do some sort of 2 step email or something.
-	
-	hashedPwd := utils.SaltAndHashPwd(user.Username, user.UnhashedPwd)
+	hashedPwd := fmt.Sprintf("%x", sha256.Sum256([]byte(user.Username + user.UnhashedPwd)))
 
 	query := `
 		INSERT INTO USERS	(created_at, email,	username,	hashed_pwd,	permission_level)

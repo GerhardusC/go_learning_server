@@ -2,11 +2,12 @@ package dbInteractions
 
 import (
 	"crypto/subtle"
+	"crypto/sha256"
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"testing-server/cliArgs"
-	"testing-server/utils"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -82,7 +83,7 @@ func (user UserPreAuth) GetFromDB() (User, error) {
 		return User{}, errors.New("Password authentication not enabled.")
 	}
 
-	receivedHash := utils.SaltAndHashPwd(user.Username, user.UnhashedPwd)
+	receivedHash := fmt.Sprintf("%x", sha256.Sum256([]byte(user.Username + user.UnhashedPwd)))
 
 	log.Println("StoredHash: ", hashedPwd, "\nReceivedHash: ", receivedHash)
 
