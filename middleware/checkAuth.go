@@ -39,9 +39,16 @@ func CheckAuth(handler http.HandlerFunc) http.HandlerFunc {
 			sec = "test-secret"
 		}
 
-		token, err := jwt.ParseWithClaims(tokenString, &userJwtClaims{}, func(t *jwt.Token) (any, error) {
-			return []byte(sec), nil
-		}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
+
+		token, err := jwt.ParseWithClaims(
+			tokenString,
+			&userJwtClaims{},
+			func(t *jwt.Token) (any, error) {
+				return []byte(sec), nil
+			},
+			jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}),
+			jwt.WithExpirationRequired(),
+		)
 
 		if err != nil {
 			log.Println("Error in check auth: ", err)

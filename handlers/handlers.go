@@ -8,7 +8,6 @@ import (
 	"testing-server/cliArgs"
 	"testing-server/dbInteractions"
 	"testing-server/middleware"
-	"testing-server/types"
 )
 
 
@@ -23,10 +22,9 @@ func InitHandlers () {
 	mux.HandleFunc("GET /measurements/between", betweenMeasurementsHandler)
 
 	// User management
-	mux.HandleFunc("POST /signup", signupHandler)
 	mux.HandleFunc("POST /login", loginHandler)
 
-	// TODO: Verify that username and email are not in use before sending OTP.
+	mux.HandleFunc("POST /signup", signupHandler)
 	mux.HandleFunc("POST /signup/verify_otp", verifyOTPSignupHandler)
 
 	fs := http.FileServer(http.Dir(cliargs.ServeDir))
@@ -49,6 +47,12 @@ func InitHandlers () {
 	}
 }
 
+// A test handler...
+type Person struct {
+	Name string		`json:"name"`
+	Surname string		`json:"surname"`
+	Siblings []string	`json:"siblings"`
+}
 
 func peopleHandler (writer http.ResponseWriter, request *http.Request) {
 	names := []string{
@@ -76,7 +80,7 @@ func peopleHandler (writer http.ResponseWriter, request *http.Request) {
 		names[i] = names[i] + " " + surnames[i]
 	}
 
-	person := types.Person {
+	person := Person {
 		Name: "John",
 		Surname: "Smith",
 		Siblings: names,

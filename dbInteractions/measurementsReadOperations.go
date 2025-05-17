@@ -5,14 +5,17 @@ import (
 	"fmt"
 	"log"
 	"testing-server/cliArgs"
-	"testing-server/types"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
+type Measurement struct {
+	Timestamp int		`json:"timestamp"`
+	Topic string            `json:"topic"`
+	Value float64           `json:"value"`
+}
 
-
-func scanMeasurementsIntoArray (measurements *[]types.Measurement, res *sql.Rows) error {
+func scanMeasurementsIntoArray (measurements *[]Measurement, res *sql.Rows) error {
 	for res.Next() {
 		var measurement DBRowMeasurement[float64]
 		scanErr := res.Scan(&measurement.Timestamp, &measurement.Topic, &measurement.Value)
@@ -23,7 +26,7 @@ func scanMeasurementsIntoArray (measurements *[]types.Measurement, res *sql.Rows
 		
 		*measurements = append(
 			*measurements, 
-			types.Measurement{
+			Measurement{
 				Timestamp: measurement.Timestamp,
 				Topic: measurement.Topic,
 				Value: measurement.Value,
@@ -33,7 +36,7 @@ func scanMeasurementsIntoArray (measurements *[]types.Measurement, res *sql.Rows
 	return nil
 }
 
-func ReadAllMeasurementsFromDB () ([]types.Measurement, error) {
+func ReadAllMeasurementsFromDB () ([]Measurement, error) {
 	db, err := sql.Open("sqlite3", cliargs.DbPath)		
 	defer db.Close()
 	
@@ -48,14 +51,14 @@ func ReadAllMeasurementsFromDB () ([]types.Measurement, error) {
 		return nil, err
 	}
 
-	measurements := make([]types.Measurement, 0, 500)
+	measurements := make([]Measurement, 0, 500)
 
 	scanMeasurementsIntoArray(&measurements, res)	
 
 	return measurements, nil
 }
 
-func ReadBetweenMeasurementsFromDB (start int, stop int) ([]types.Measurement, error) {
+func ReadBetweenMeasurementsFromDB (start int, stop int) ([]Measurement, error) {
 	db, err := sql.Open("sqlite3", cliargs.DbPath)
 	defer db.Close()
 
@@ -63,7 +66,7 @@ func ReadBetweenMeasurementsFromDB (start int, stop int) ([]types.Measurement, e
 		return nil, err
 	}
 	
-	measurements := make([]types.Measurement, 0, 500)
+	measurements := make([]Measurement, 0, 500)
 
 	res, err := db.Query("SELECT * FROM MEASUREMENTS WHERE timestamp > ? AND timestamp < ?;", start, stop)
 
@@ -76,7 +79,7 @@ func ReadBetweenMeasurementsFromDB (start int, stop int) ([]types.Measurement, e
 	return measurements, nil
 }
 
-func ReadSinceMeasurementsFromDB (timestamp int) ([]types.Measurement, error) {
+func ReadSinceMeasurementsFromDB (timestamp int) ([]Measurement, error) {
 	db, err := sql.Open("sqlite3", cliargs.DbPath)
 	defer db.Close()
 	
@@ -84,7 +87,7 @@ func ReadSinceMeasurementsFromDB (timestamp int) ([]types.Measurement, error) {
 		return nil, err
 	}
 
-	measurements := make([]types.Measurement, 0, 500)
+	measurements := make([]Measurement, 0, 500)
 
 	res, err := db.Query("SELECT * FROM MEASUREMENTS WHERE timestamp > ?;", timestamp)
 
