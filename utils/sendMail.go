@@ -36,7 +36,7 @@ func SendExampleEmail () {
 	fmt.Println("Email sent successfully!")
 }
 
-func SendOTP (otp string, toEmail string) error {
+func SendOTPEmail (otp string, toEmail string) error {
 	from := os.Getenv("EMAIL_USERNAME")
 	password := os.Getenv("EMAIL_PASSWORD")
 

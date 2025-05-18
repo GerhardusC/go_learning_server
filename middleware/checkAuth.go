@@ -14,7 +14,7 @@ import (
 
 type userContextKey string
 
-const AuthUserKey userContextKey = "user context key"
+const AuthUserKey userContextKey = "authorised user"
 
 type userJwtClaims struct {
 	UserDetails dbInteractions.User `json:"user_details"`

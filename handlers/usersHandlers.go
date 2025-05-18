@@ -22,7 +22,6 @@ func signupHandler (writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-
 	err = utils.ValidateEmailPwd(preAuthUser.Email, preAuthUser.UnhashedPwd)
 
 	if err != nil {
@@ -37,7 +36,8 @@ func signupHandler (writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	err = preAuthUser.SendOTP()
+
+	sessionID, err := preAuthUser.SendOTP()
 
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -45,7 +45,7 @@ func signupHandler (writer http.ResponseWriter, request *http.Request) {
 	}
 
 	writer.Header().Set("content-type", "text/plain")
-	writer.Write([]byte("OTP sent"))
+	writer.Write([]byte(sessionID))
 }
 
 func loginHandler (writer http.ResponseWriter, request *http.Request) {
@@ -68,8 +68,8 @@ func loginHandler (writer http.ResponseWriter, request *http.Request) {
 	log.Println("TokenString: ", token)
 	
 	writer.Header().Set("Authorization", fmt.Sprint("Bearer ", token))
-	writer.Header().Set("content-type", "text/plain")
-	writer.Write([]byte("Login successful."))
+	writer.Header().Set("content-type", "application/json")
+	writer.Write([]byte(`{"token": "` + token + `"}`))
 }
 
 func verifyOTPSignupHandler (writer http.ResponseWriter, request *http.Request) {
@@ -77,17 +77,14 @@ func verifyOTPSignupHandler (writer http.ResponseWriter, request *http.Request) 
 
 	err := json.NewDecoder(request.Body).Decode(&verifyOTPObj)
 
-	log.Println("Pre Auth User: ", verifyOTPObj)
+	log.Println("Verify OTP Obj:", verifyOTPObj)
 
 	if err != nil {
 		http.Error(writer, errors.New("Failed to decode JSON").Error(), http.StatusBadRequest)
 		return
 	}
 
-	user := verifyOTPObj.User
-
-
-	err = user.VerifyOTP(verifyOTPObj.OTP)
+	user, err := verifyOTPObj.GetUser()
 
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusUnauthorized)
@@ -103,14 +100,13 @@ func verifyOTPSignupHandler (writer http.ResponseWriter, request *http.Request) 
 
 	authorisedUser, err := dbInteractions.GetUserByUsername(user.Username)
 
-	token, err := dbInteractions.GenerateToken(&authorisedUser)
+	token, err := authorisedUser.GenerateToken()
 
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusUnauthorized)
 		return
 	}
 	
-	writer.Header().Set("Authorization", fmt.Sprint("Bearer ", token))
-	writer.Header().Set("content-type", "text/plain")
-	writer.Write([]byte("Signup successful."))
+	writer.Header().Set("content-type", "application/json")
+	writer.Write([]byte(`{"token": "` + token + `"}`))
 }
