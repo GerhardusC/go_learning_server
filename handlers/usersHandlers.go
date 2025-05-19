@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"testing-server/dbInteractions"
@@ -44,11 +43,12 @@ func signupHandler (writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	writer.Header().Set("content-type", "text/plain")
-	writer.Write([]byte(sessionID))
+	writer.Header().Set("content-type", "application/json")
+	writer.Write([]byte(`{"session_id": "` + sessionID + `"}`))
 }
 
 func loginHandler (writer http.ResponseWriter, request *http.Request) {
+	// TODO: One day, add 2 steps to login.
 	var preAuthUser dbInteractions.UserPreAuth
 
 	err := json.NewDecoder(request.Body).Decode(&preAuthUser)
@@ -67,7 +67,6 @@ func loginHandler (writer http.ResponseWriter, request *http.Request) {
 
 	log.Println("TokenString: ", token)
 	
-	writer.Header().Set("Authorization", fmt.Sprint("Bearer ", token))
 	writer.Header().Set("content-type", "application/json")
 	writer.Write([]byte(`{"token": "` + token + `"}`))
 }
