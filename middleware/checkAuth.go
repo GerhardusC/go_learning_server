@@ -21,7 +21,7 @@ type userJwtClaims struct {
 	jwt.RegisteredClaims
 }
 
-func CheckAuth(handler http.HandlerFunc) http.HandlerFunc {
+func CheckAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func (writer http.ResponseWriter, request *http.Request) {
 		authHeader := request.Header.Get("Authorization")
 
@@ -69,7 +69,7 @@ func CheckAuth(handler http.HandlerFunc) http.HandlerFunc {
 
 		reqWithUser := request.WithContext(ctx)
 
-		handler(writer, reqWithUser)
+		next(writer, reqWithUser)
 	}
 }
 

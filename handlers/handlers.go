@@ -14,10 +14,14 @@ import (
 func InitHandlers () {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /person", middleware.CheckAuth(peopleHandler))
+	mux.HandleFunc("GET /person", middleware.LimitRate(middleware.CheckAuth(peopleHandler), 1))
 
 	// Measurements
-	mux.HandleFunc("GET /measurements", middleware.CheckAuth(allMeasurementsHandler))
+	mux.HandleFunc(
+		"GET /measurements",
+		middleware.LimitRate(middleware.CheckAuth(allMeasurementsHandler), 0.2),
+	)
+
 	mux.HandleFunc("GET /measurements/since", sinceMeasurementsHandler)
 	mux.HandleFunc("GET /measurements/between", betweenMeasurementsHandler)
 
@@ -30,8 +34,7 @@ func InitHandlers () {
 	fs := http.FileServer(http.Dir(cliargs.ServeDir))
 	mux.Handle("GET /", fs)
 
-
-	muxMiddlewareApplied := middleware.NewLogger(mux)
+	muxMiddlewareApplied := middleware.NewLogger(mux.ServeHTTP)
 
 	server := http.Server{
 		Handler: muxMiddlewareApplied,

@@ -7,7 +7,7 @@ import (
 )
 
 type Logger struct {
-	handler http.Handler
+	handler http.HandlerFunc
 }
 
 func (l *Logger) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
@@ -33,7 +33,7 @@ func (l *Logger) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	)
 }
 
-func NewLogger(handler http.Handler) *Logger {
+func NewLogger(handler http.HandlerFunc) *Logger {
 	return &Logger{handler}
 }
 
