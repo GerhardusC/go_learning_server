@@ -14,12 +14,12 @@ import (
 func InitHandlers () {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /person", middleware.LimitRate(middleware.CheckAuth(peopleHandler), 1))
+	mux.HandleFunc("GET /person", middleware.LimitRate(middleware.CheckAuth(peopleHandler), 1, 10))
 
 	// Measurements
 	mux.HandleFunc(
 		"GET /measurements",
-		middleware.LimitRate(middleware.CheckAuth(allMeasurementsHandler), 0.2),
+		middleware.LimitRate(middleware.CheckAuth(allMeasurementsHandler), 0.2, 1),
 	)
 
 	mux.HandleFunc("GET /measurements/since", sinceMeasurementsHandler)

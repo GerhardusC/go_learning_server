@@ -4,41 +4,73 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
+
 	"sync"
 	"time"
 
 	"golang.org/x/time/rate"
 )
 
+const BURST_REQUEST_COUNT int = 10
+
 type rateLimitObj struct {
 	limiter *rate.Limiter
 	lastSeen time.Time
 }
 
+type clientsObj struct {
+	mutx sync.Mutex
+	clients map[string]*rateLimitObj
+	channel chan string
+}
 
-func LimitRate (next http.HandlerFunc, rateLimit float64) http.HandlerFunc {
+func clearOldClients (clientsMapObj *clientsObj) {
+	for {
+		time.Sleep(time.Minute)
 
-	var (
-		mutx sync.Mutex
-		clients = make(map[string] *rateLimitObj)
-	)
+		for key, client := range clientsMapObj.clients {
+			if time.Since(client.lastSeen) > time.Hour * 1 {
+				clientsMapObj.mutx.Lock()
+				delete(clientsMapObj.clients, key)
+				clientsMapObj.mutx.Unlock()
+				log.Println("\n\033[1;34;47m Client deleted: \033[0m", key)
+			}
+		}
+
+	}
+}
+
+func handleIPsSentToChan(clientsMapObj *clientsObj, rateLimit float64, burst int) {
+	for  {
+		addr := <- clientsMapObj.channel
+		newVal := rateLimitObj{
+			limiter: rate.NewLimiter(rate.Limit(rateLimit), burst),
+			lastSeen: time.Now(),
+		}
+		clientsMapObj.clients[addr] = &newVal
+	}
+}
+
+func LimitRate (next http.HandlerFunc, rateLimit float64, burst int) http.HandlerFunc {
+
+	clientsMapObject := clientsObj{
+		clients: make(map[string]*rateLimitObj),
+		channel: make(chan string, 10),
+	}
+	go handleIPsSentToChan(&clientsMapObject, 0.2, burst)
+	go clearOldClients(&clientsMapObject)
 
 	return func (writer http.ResponseWriter, request *http.Request) {
 		addr := fmt.Sprintf("%x", sha256.Sum256([]byte(request.RemoteAddr)))
 
-		mutx.Lock()
-
-		// TODO: Periodically clear map
-		val, ok := clients[addr]
+		val, ok := clientsMapObject.clients[addr]
 
 		if !ok {
-			newVal := rateLimitObj{
-				limiter: rate.NewLimiter(rate.Limit(rateLimit), 1),
-			}
-			clients[addr] = &newVal
-
-			val = clients[addr]
+			clientsMapObject.channel<- addr
+			next(writer, request)
+			return
 		}
 
 		val.lastSeen = time.Now()
@@ -49,10 +81,8 @@ func LimitRate (next http.HandlerFunc, rateLimit float64) http.HandlerFunc {
 				errors.New("Rate limit exceeded").Error(),
 				http.StatusTooManyRequests,
 			)
-			mutx.Unlock()
 			return
 		}
-		mutx.Unlock()
 
 		next(writer, request)
 	}
