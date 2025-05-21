@@ -37,6 +37,9 @@ func messageHandler (client mqtt.Client, message mqtt.Message) {
 
 func CollectData () {
 	clientOpts := mqtt.NewClientOptions()
+	clientOpts.SetProtocolVersion(4)
+	clientOpts.SetOrderMatters(false)
+	clientOpts.SetAutoReconnect(true)
 	clientOpts.AddBroker(fmt.Sprintf("mqtt://%s:1883", cliargs.HostIP))
 	client := mqtt.NewClient(clientOpts)
 
@@ -58,7 +61,7 @@ func CollectData () {
 	subscriptionToken := client.Subscribe(topic, 0, messageHandler)
 
 	for {
-		subscriptionToken.Wait()
+		<- subscriptionToken.Done()
 		if subscriptionToken.Error() != nil {
 			log.Println(subscriptionToken.Error())
 		}

@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 	"testing-server/cliArgs"
-	"testing-server/dataCollection"
 	"testing-server/dbInteractions"
 	"testing-server/handlers"
 	"testing-server/utils"
@@ -20,6 +19,5 @@ func main () {
 		go utils.SendExampleEmail()
 	}
 
-	go datacollection.CollectData()
 	handlers.InitHandlers()
 }
