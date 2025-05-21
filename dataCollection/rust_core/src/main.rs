@@ -1,25 +1,13 @@
+mod args;
+
+use args::ARGS;
 use chrono::Local;
-use clap::Parser;
 use rusqlite::{params, Connection};
 use std::{io::{Error, ErrorKind}, time::Duration};
 
 use color_eyre::Result;
 use mosquitto_rs::*;
 use tokio::time::sleep;
-
-/// Lightweight program that performs data collection via MQTT and saves the data to a SQLITE database.
-#[derive(Parser, Debug, Clone)]
-#[command(version, about, long_about = None)]
-struct Cli {
-    #[arg(short, long, default_value_t = String::from("./dev.db"))]
-    db_path: String,
-
-    #[arg(short('t'), long, default_value_t = String::from(""))]
-    base_topic: String,
-
-    #[arg(short, long, default_value_t = String::from("localhost"))]
-    broker_ip: String,
-}
 
 enum SensorValue {
     NUM(f32),
@@ -46,8 +34,8 @@ impl SensorReading {
         }
     }
 
-    fn add_to_db(&self, args: &Cli) -> Result<()> {
-        let connection = Connection::open(&args.db_path)?;
+    fn add_to_db(&self) -> Result<()> {
+        let connection = Connection::open(&ARGS.db_path)?;
         match &self.value {
             SensorValue::NUM(float_val) => {
                 connection.execute(
@@ -82,9 +70,23 @@ impl SensorReading {
 #[tokio::main]
 async fn main() -> Result<()> {
     color_eyre::install()?;
-    let args = Cli::parse();
 
-    let connection = Connection::open(&args.db_path)?;
+    setup_db()?;
+
+    loop {
+        let success = subscribe_to_base_topic().await;
+        match success {
+            Ok(()) => (),
+            Err(e) => {
+                println!("Something went wrong, trying again soon.\n{}", e);
+                sleep(Duration::from_secs(1)).await;
+            }
+        }
+    }
+}
+
+fn setup_db () -> Result<()> {
+    let connection = Connection::open(&ARGS.db_path)?;
     connection.execute("
         CREATE TABLE if not exists MEASUREMENTS (
                 timestamp int,
@@ -99,34 +101,24 @@ async fn main() -> Result<()> {
         CREATE TABLE if not exists LOGS (
                 timestamp int,
                 topic varchar(255),
-                value float
+                value varchar(255)
         )
         ",
         (),
     )?;
-
-    loop {
-        let success = subscribe(&args).await;
-        match success {
-            Ok(()) => (),
-            Err(e) => {
-                println!("Something went wrong, trying again soon.\n{}", e);
-                sleep(Duration::from_secs(1)).await;
-            }
-        }
-    }
+    Ok(())
 }
 
-async fn subscribe(args: &Cli) -> Result<()> {
+async fn subscribe_to_base_topic() -> Result<()> {
     let client = Client::with_auto_id()?;
     client
-        .connect(&args.broker_ip, 1883, Duration::from_secs(5), None)
+        .connect(&ARGS.broker_ip, 1883, Duration::from_secs(5), None)
         .await?;
 
     let subscriptions = client.subscriber();
-    let topic = if args.base_topic == ""
+    let topic = if &ARGS.base_topic == ""
         {"/#"} else
-        {&format!("/{}/#", &args.base_topic)};
+        {&format!("/{}/#", &ARGS.base_topic)};
 
     client.subscribe(topic, QoS::AtMostOnce).await?;
 
@@ -134,7 +126,7 @@ async fn subscribe(args: &Cli) -> Result<()> {
         if let Some(sub) = &subscriptions {
             match sub.recv().await {
                 Ok(msg) => {
-                    respond_to_event(msg, args)?;
+                    respond_to_event(msg)?;
                 },
                 Err(err) => {
                     println!("Error receiveing: {}", err)
@@ -146,7 +138,7 @@ async fn subscribe(args: &Cli) -> Result<()> {
     }
 }
 
-fn respond_to_event (msg: Event, args: &Cli) -> Result<()> {
+fn respond_to_event (msg: Event) -> Result<()> {
     match msg {
         Event::Message(message) => {
             let now_timestamp_i64 = Local::now().timestamp();
@@ -162,7 +154,7 @@ fn respond_to_event (msg: Event, args: &Cli) -> Result<()> {
                 String::from_utf8(message.payload)?,
             );
 
-            reading.add_to_db(&args)?;
+            reading.add_to_db()?;
         },
         Event::Connected(connection_status) => {
             println!("\x1b[1;30;42mConnected:\x1b[0m {}", connection_status)
