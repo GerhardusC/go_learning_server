@@ -65,7 +65,15 @@ fn respond_to_event (msg: Event) -> Result<()> {
                 String::from_utf8(message.payload)?,
             );
 
-            reading.add_to_db()?;
+            tokio::spawn(async move {
+                match reading.add_to_db() {
+                    Ok(_) => (),
+                    Err(err) => {
+                        println!("Something went wrong while adding data to the db: {}", err)
+                    },
+                }
+            });
+            ()
         },
         Event::Connected(connection_status) => {
             println!("\x1b[1;30;42mConnected:\x1b[0m {}", connection_status)
