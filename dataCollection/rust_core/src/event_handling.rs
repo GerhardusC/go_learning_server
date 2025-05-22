@@ -1,3 +1,4 @@
+use crate::utils::validate_topic;
 use crate::ARGS;
 use crate::data_collection::{save_value_to_db_bg, save_value_to_redis_bg};
 use std::{io::{Error, ErrorKind}, time::Duration};
@@ -25,11 +26,10 @@ async fn subscribe_to_base_topic() -> Result<()> {
         .await?;
 
     let subscriptions = mosquitto_client.subscriber();
-    let topic = if &ARGS.base_topic == ""
-        {"/#"} else
-        {&format!("/{}/#", &ARGS.base_topic)};
+    let topic = validate_topic(&ARGS.base_topic);
+    println!("\x1b[1;30;43mINFO:\x1b[47m Base topic:\x1b[0m {}", topic);
 
-    mosquitto_client.subscribe(topic, QoS::AtMostOnce).await?;
+    mosquitto_client.subscribe(&topic, QoS::AtMostOnce).await?;
 
     loop {
         if let Some(sub) = &subscriptions {
